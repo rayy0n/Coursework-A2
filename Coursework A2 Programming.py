@@ -42,6 +42,55 @@ def compare_configs(config1, config2):
     return '\n'.join(diff)
 
 # ... (Your existing code)
+# Define variables
+ip_address = '192.168.56.101'
+username = 'cisco'
+password = 'cisco123!'
+password_enable = 'class123!'
+
+# Create Telnet session
+session = pexpect.spawn('telnet ' + ip_address, encoding='utf-8', timeout=20)
+result = session.expect(['Username: ', pexpect.TIMEOUT])
+
+# Check for an error, if an error exists, then display the error and exit
+if result != 0:
+    print('---FAILURE! creating session for: ', ip_address)
+    exit()
+
+# Session is expecting a username, enter details
+session.sendline(username)
+result = session.expect(['Password:', pexpect.TIMEOUT])
+
+# Check for an error, if an error exists, then display the error and exit
+if result != 0:
+    print('---FAILURE! entering username: ', username)
+    exit()
+
+# Session is expecting a password, enter details
+session.sendline(password)
+result = session.expect(['#', pexpect.TIMEOUT])
+
+# Check for an error, if it exists, then display the error and exit
+if result != 0:
+    print('---FAILURE! entering password: ', password)
+    exit()
+
+# Capture the running configuration
+session.sendline('show running-config')
+result = session.expect(['#', pexpect.TIMEOUT])
+
+# Check for an error, if it exists, then display the error and exit
+if result != 0:
+    print('---FAILURE! capturing running configuration')
+
+# Save the running configuration to a file locally
+with open('running-config.txt', 'w') as config_file:
+    config_file.write(session.before)
+
+# Change hostname of router 
+
+# Enter enable mode
+
 session.sendline('enable')
 result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
 
@@ -93,8 +142,6 @@ print('------------------------------------------')
 
 # Terminate Telnet to the device and close the session
 session.sendline('quit')
-session.close()
-
 ###
 
 # Get the running configuration after making changes
